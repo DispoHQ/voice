@@ -107,8 +107,8 @@
   if (self.audioEngine.isRunning) {
     [self.audioEngine stop];
     [self.audioEngine reset];
-    self.audioEngine = nil;
   }
+  self.audioEngine = nil;
 
   self.recognitionRequest = nil;
   self.recognitionUrlRequest = nil;
