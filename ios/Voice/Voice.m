@@ -588,27 +588,7 @@ RCT_EXPORT_METHOD(startSpeech
     return;
   }
 
-  [SFSpeechRecognizer requestAuthorization:^(
-                          SFSpeechRecognizerAuthorizationStatus status) {
-    switch (status) {
-    case SFSpeechRecognizerAuthorizationStatusNotDetermined:
-      [self sendResult:RCTMakeError(@"Speech recognition not yet authorized",
-                                    nil, nil):nil:nil:nil];
-      break;
-    case SFSpeechRecognizerAuthorizationStatusDenied:
-      [self sendResult:RCTMakeError(@"User denied access to speech recognition",
-                                    nil, nil):nil:nil:nil];
-      break;
-    case SFSpeechRecognizerAuthorizationStatusRestricted:
-      [self sendResult:RCTMakeError(
-                           @"Speech recognition restricted on this device", nil,
-                           nil):nil:nil:nil];
-      break;
-    case SFSpeechRecognizerAuthorizationStatusAuthorized:
-      [self setupAndStartRecognizing:localeStr];
-      break;
-    }
-  }];
+  [self setupAndStartRecognizing:localeStr];
   callback(@[ @false ]);
 }
 
