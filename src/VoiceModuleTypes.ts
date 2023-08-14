@@ -30,6 +30,7 @@ export type SpeechEvents = {
   onSpeechResults?: (e: SpeechResultsEvent) => void;
   onSpeechPartialResults?: (e: SpeechResultsEvent) => void;
   onSpeechVolumeChanged?: (e: SpeechVolumeChangeEvent) => void;
+  onFrecuencyChanged?: (e: FrecuencyChangeEvent) => void;
 };
 
 export type TranscriptionEvents = {
@@ -85,4 +86,8 @@ export type TranscriptionEndEvent = {
 
 export type SpeechVolumeChangeEvent = {
   value?: number;
+};
+
+export type FrecuencyChangeEvent = {
+  frecuencies?: number[];
 };

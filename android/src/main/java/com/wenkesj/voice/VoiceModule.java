@@ -28,6 +28,8 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.PermissionAwareActivity;
 import com.facebook.react.modules.core.PermissionListener;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +42,7 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
   private SpeechRecognizer speech = null;
   private boolean isRecognizing = false;
   private String locale = null;
+  private double renderTs = 0;
 
   public VoiceModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -59,11 +62,12 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
       speech.destroy();
       speech = null;
     }
-    
-    if(opts.hasKey("RECOGNIZER_ENGINE")) {
+
+    if (opts.hasKey("RECOGNIZER_ENGINE")) {
       switch (opts.getString("RECOGNIZER_ENGINE")) {
         case "GOOGLE": {
-          speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext, ComponentName.unflattenFromString("com.google.android.googlequicksearchbox/com.google.android.voicesearch.serviceapi.GoogleRecognitionService"));
+          speech = SpeechRecognizer.createSpeechRecognizer(this.reactContext, ComponentName.unflattenFromString(
+              "com.google.android.googlequicksearchbox/com.google.android.voicesearch.serviceapi.GoogleRecognitionService"));
           break;
         }
         default:
@@ -116,7 +120,8 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
         }
         case "EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS": {
           Double extras = opts.getDouble(key);
-          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, extras.intValue());
+          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,
+              extras.intValue());
           break;
         }
       }
@@ -152,21 +157,22 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
   @ReactMethod
   public void startSpeech(final String locale, final ReadableMap opts, final Callback callback) {
     if (!isPermissionGranted() && opts.getBoolean("REQUEST_PERMISSIONS_AUTO")) {
-      String[] PERMISSIONS = {Manifest.permission.RECORD_AUDIO};
+      String[] PERMISSIONS = { Manifest.permission.RECORD_AUDIO };
       if (this.getCurrentActivity() != null) {
-        ((PermissionAwareActivity) this.getCurrentActivity()).requestPermissions(PERMISSIONS, 1, new PermissionListener() {
-          public boolean onRequestPermissionsResult(final int requestCode,
-                                                    @NonNull final String[] permissions,
-                                                    @NonNull final int[] grantResults) {
-            boolean permissionsGranted = true;
-            for (int i = 0; i < permissions.length; i++) {
-              final boolean granted = grantResults[i] == PackageManager.PERMISSION_GRANTED;
-              permissionsGranted = permissionsGranted && granted;
-            }
-            startSpeechWithPermissions(locale, opts, callback);
-            return permissionsGranted;
-          }
-        });
+        ((PermissionAwareActivity) this.getCurrentActivity()).requestPermissions(PERMISSIONS, 1,
+            new PermissionListener() {
+              public boolean onRequestPermissionsResult(final int requestCode,
+                  @NonNull final String[] permissions,
+                  @NonNull final int[] grantResults) {
+                boolean permissionsGranted = true;
+                for (int i = 0; i < permissions.length; i++) {
+                  final boolean granted = grantResults[i] == PackageManager.PERMISSION_GRANTED;
+                  permissionsGranted = permissionsGranted && granted;
+                }
+                startSpeechWithPermissions(locale, opts, callback);
+                return permissionsGranted;
+              }
+            });
       }
       return;
     }
@@ -185,7 +191,7 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
           }
           isRecognizing = false;
           callback.invoke(false);
-        } catch(Exception e) {
+        } catch (Exception e) {
           callback.invoke(e.getMessage());
         }
       }
@@ -204,7 +210,7 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
           }
           isRecognizing = false;
           callback.invoke(false);
-        } catch(Exception e) {
+        } catch (Exception e) {
           callback.invoke(e.getMessage());
         }
       }
@@ -224,7 +230,7 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
           speech = null;
           isRecognizing = false;
           callback.invoke(false);
-        } catch(Exception e) {
+        } catch (Exception e) {
           callback.invoke(e.getMessage());
         }
       }
@@ -241,7 +247,7 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
         try {
           Boolean isSpeechAvailable = SpeechRecognizer.isRecognitionAvailable(self.reactContext);
           callback.invoke(isSpeechAvailable, false);
-        } catch(Exception e) {
+        } catch (Exception e) {
           callback.invoke(false, e.getMessage());
         }
       }
@@ -273,8 +279,8 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
 
   private void sendEvent(String eventName, @Nullable WritableMap params) {
     this.reactContext
-      .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-      .emit(eventName, params);
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit(eventName, params);
   }
 
   @Override
@@ -291,6 +297,19 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
     event.putBoolean("error", false);
     sendEvent("onSpeechRecognized", event);
     Log.d("ASR", "onBufferReceived()");
+
+    ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
+    byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+
+    int bufferSize = buffer.length / 2;
+    float[] audioData = new float[bufferSize];
+
+    for (int i = 0; i < bufferSize; i++) {
+      short sample = byteBuffer.getShort();
+      audioData[i] = sample / (float) Short.MAX_VALUE;
+    }
+
+    processAudioData(audioData, bufferSize);
   }
 
   @Override
@@ -315,7 +334,8 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
   }
 
   @Override
-  public void onEvent(int arg0, Bundle arg1) { }
+  public void onEvent(int arg0, Bundle arg1) {
+  }
 
   @Override
   public void onPartialResults(Bundle results) {
@@ -400,5 +420,34 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
         break;
     }
     return message;
+  }
+
+  private void processAudioData(float[] audioData, int frameLength) {
+    double ts = System.currentTimeMillis() / 1000.0; // Convert to seconds
+    if (ts - renderTs > 0.1) {
+      ArrayList<Float> floats = new ArrayList<>();
+      for (int i = 0; i < frameLength; i++) {
+        floats.add(audioData[i]);
+      }
+
+      renderTs = ts;
+      int len = 20;
+      ArrayList<Integer> valuesArray = new ArrayList<>();
+      for (int i = 0; i < len; i++) {
+        int idx = (int) (((frameLength - 1) * i) / len);
+        float f = (float) Math.sqrt(1.5 * Math.abs(floats.get(idx)) / Short.MAX_VALUE);
+        float scaledValue = f * 25.0f; // Scale to the range [0, 25]
+        valuesArray.add(Math.min(25, (int) scaledValue));
+      }
+
+      WritableMap params = Arguments.createMap();
+      WritableArray frequencies = Arguments.createArray();
+      for (int value : valuesArray) {
+        frequencies.pushInt(value);
+      }
+      params.putArray("frequencies", frequencies);
+
+      sendEvent("onFrecuencyChanged", params);
+    }
   }
 }

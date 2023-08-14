@@ -432,6 +432,30 @@
                       [self sendEventWithName:@"onSpeechVolumeChanged"
                                          body:@{@"value" : value}];
 
+                      const float *const *channels = (const float *const *)buffer.floatChannelData;
+                      NSTimeInterval ts = [[NSDate date] timeIntervalSince1970];
+                      if (ts - self.renderTs > 0.1) {
+                        const float *floats = (const float *)channels[0];
+                        NSMutableArray *frameArray = [NSMutableArray array];
+                        for (NSUInteger i = 0; i < buffer.frameLength; i++) {
+                            [frameArray addObject:@((int)(floats[i] * (float)INT16_MAX))];
+                        }
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            self.renderTs = ts;
+                            NSUInteger len = 20;
+                            NSMutableArray *valuesArray = [NSMutableArray array];
+                            for (NSUInteger i = 0; i < len; i++) {
+                                NSUInteger idx = ((buffer.frameLength - 1) * i) / len;
+                              float f = sqrtf(1.5 * fabsf([frameArray[idx] floatValue]) / (float)INT16_MAX);
+                              float scaledValue = f * 25.0; // Scale to the range [0, 25]
+                              [valuesArray addObject:@((int) MIN(25, (int)scaledValue))];
+                            }
+                          [self sendEventWithName:@"onFrecuencyChanged"
+                                             body:@{@"frecuencies" : valuesArray}];
+
+                        });
+        }
+
                       // Todo: write recording buffer to file (if user
                       // opts in)
                       if (self.recognitionRequest != nil) {

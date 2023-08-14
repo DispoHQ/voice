@@ -14,6 +14,7 @@ import {
   SpeechEndEvent,
   SpeechVolumeChangeEvent,
   TranscriptionResultsEvent,
+  FrecuencyChangeEvent,
 } from './VoiceModuleTypes';
 
 const Voice = NativeModules.Voice as VoiceModule;
@@ -44,6 +45,7 @@ class RCTVoice {
       onTranscriptionEnd: () => {},
       onTranscriptionError: () => {},
       onTranscriptionResults: () => {},
+      onFrecuencyChanged: () => {},
     };
   }
 
@@ -59,6 +61,7 @@ class RCTVoice {
     Voice.onTranscriptionEnd = undefined;
     Voice.onTranscriptionError = undefined;
     Voice.onTranscriptionResults = undefined;
+    Voice.onFrecuencyChanged = undefined;
   }
 
   destroy() {
@@ -71,7 +74,7 @@ class RCTVoice {
           reject(new Error(error));
         } else {
           if (this._listeners) {
-            this._listeners.map(listener => listener.remove());
+            this._listeners.map((listener) => listener.remove());
             this._listeners = null;
           }
           resolve();
@@ -89,7 +92,7 @@ class RCTVoice {
           reject(new Error(error));
         } else {
           if (this._listeners) {
-            this._listeners.map(listener => listener.remove());
+            this._listeners.map((listener) => listener.remove());
             this._listeners = null;
           }
           resolve();
@@ -173,7 +176,7 @@ class RCTVoice {
       return Promise.resolve();
     }
     return new Promise((resolve, reject) => {
-      Voice.stopSpeech(error => {
+      Voice.stopSpeech((error) => {
         if (error) {
           reject(new Error(error));
         } else {
@@ -187,7 +190,7 @@ class RCTVoice {
       return Promise.resolve();
     }
     return new Promise<void>((resolve, reject) => {
-      Voice.stopTranscription(error => {
+      Voice.stopTranscription((error) => {
         if (error) {
           reject(new Error(error));
         } else {
@@ -201,7 +204,7 @@ class RCTVoice {
       return Promise.resolve();
     }
     return new Promise((resolve, reject) => {
-      Voice.cancelSpeech(error => {
+      Voice.cancelSpeech((error) => {
         if (error) {
           reject(new Error(error));
         } else {
@@ -215,7 +218,7 @@ class RCTVoice {
       return Promise.resolve();
     }
     return new Promise<void>((resolve, reject) => {
-      Voice.cancelSpeech(error => {
+      Voice.cancelSpeech((error) => {
         if (error) {
           reject(new Error(error));
         } else {
@@ -252,7 +255,7 @@ class RCTVoice {
   }
 
   isRecognizing(): Promise<0 | 1> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       Voice.isRecognizing((isRecognizing: 0 | 1) => resolve(isRecognizing));
     });
   }
@@ -298,6 +301,10 @@ class RCTVoice {
   set onSpeechVolumeChanged(fn: (e: SpeechVolumeChangeEvent) => void) {
     this._events.onSpeechVolumeChanged = fn;
   }
+
+  set onFrecuencyChanged(fn: (e: FrecuencyChangeEvent) => void) {
+    this._events.onFrecuencyChanged = fn;
+  }
 }
 
 export {
@@ -313,5 +320,6 @@ export {
   TranscriptionEvents,
   TranscriptionStartEvent,
   TranscriptionResultsEvent,
+  FrecuencyChangeEvent,
 };
 export default new RCTVoice();
