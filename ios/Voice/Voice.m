@@ -24,6 +24,7 @@
 /** Volume level Metering*/
 @property float averagePowerForChannel0;
 @property float averagePowerForChannel1;
+@property (nonatomic, assign) double renderTs;
 
 @end
 
@@ -381,6 +382,7 @@
     [self.audioEngine attachNode:mixer];
 
     // Start recording and append recording buffer to speech recognizer
+    self.renderTs = 0
     @try {
       [mixer
           installTapOnBus:0
@@ -450,8 +452,8 @@
                               float scaledValue = f * 25.0; // Scale to the range [0, 25]
                               [valuesArray addObject:@((int) MIN(25, (int)scaledValue))];
                             }
-                          [self sendEventWithName:@"onFrecuencyChanged"
-                                             body:@{@"frecuencies" : valuesArray}];
+                          [self sendEventWithName:@"onFrequencyChanged"
+                                             body:@{@"frequencies" : valuesArray}];
 
                         });
         }

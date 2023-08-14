@@ -447,7 +447,7 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
       }
       params.putArray("frequencies", frequencies);
 
-      sendEvent("onFrecuencyChanged", params);
+      sendEvent("onFrequencyChanged", params);
     }
   }
 }

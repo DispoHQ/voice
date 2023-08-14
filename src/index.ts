@@ -14,7 +14,7 @@ import {
   SpeechEndEvent,
   SpeechVolumeChangeEvent,
   TranscriptionResultsEvent,
-  FrecuencyChangeEvent,
+  FrequencyChangeEvent,
 } from './VoiceModuleTypes';
 
 const Voice = NativeModules.Voice as VoiceModule;
@@ -45,7 +45,7 @@ class RCTVoice {
       onTranscriptionEnd: () => {},
       onTranscriptionError: () => {},
       onTranscriptionResults: () => {},
-      onFrecuencyChanged: () => {},
+      onFrequencyChanged: () => {},
     };
   }
 
@@ -61,7 +61,7 @@ class RCTVoice {
     Voice.onTranscriptionEnd = undefined;
     Voice.onTranscriptionError = undefined;
     Voice.onTranscriptionResults = undefined;
-    Voice.onFrecuencyChanged = undefined;
+    Voice.onFrequencyChanged = undefined;
   }
 
   destroy() {
@@ -302,8 +302,8 @@ class RCTVoice {
     this._events.onSpeechVolumeChanged = fn;
   }
 
-  set onFrecuencyChanged(fn: (e: FrecuencyChangeEvent) => void) {
-    this._events.onFrecuencyChanged = fn;
+  set onFrequencyChanged(fn: (e: FrequencyChangeEvent) => void) {
+    this._events.onFrequencyChanged = fn;
   }
 }
 
@@ -320,6 +320,6 @@ export {
   TranscriptionEvents,
   TranscriptionStartEvent,
   TranscriptionResultsEvent,
-  FrecuencyChangeEvent,
+  FrequencyChangeEvent,
 };
 export default new RCTVoice();
