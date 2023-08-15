@@ -382,7 +382,7 @@
     [self.audioEngine attachNode:mixer];
 
     // Start recording and append recording buffer to speech recognizer
-    self.renderTs = 0
+    self.renderTs = 0;
     @try {
       [mixer
           installTapOnBus:0
@@ -456,7 +456,7 @@
                                              body:@{@"frequencies" : valuesArray}];
 
                         });
-        }
+                      }
 
                       // Todo: write recording buffer to file (if user
                       // opts in)
