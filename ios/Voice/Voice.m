@@ -516,7 +516,7 @@
     @"onSpeechResults", @"onSpeechStart", @"onSpeechPartialResults",
     @"onSpeechError", @"onSpeechEnd", @"onSpeechRecognized",
     @"onSpeechVolumeChanged", @"onTranscriptionStart", @"onTranscriptionEnd",
-    @"onTranscriptionError", @"onTranscriptionResults"
+    @"onTranscriptionError", @"onTranscriptionResults", @"onFrequencyChanged",
   ];
 }
 
