@@ -436,7 +436,7 @@
 
                       const float *const *channels = (const float *const *)buffer.floatChannelData;
                       NSTimeInterval ts = [[NSDate date] timeIntervalSince1970];
-                      if (ts - self.renderTs > 0.1) {
+                      if (ts - self.renderTs > 0.005) {
                         const float *floats = (const float *)channels[0];
                         NSMutableArray *frameArray = [NSMutableArray array];
                         for (NSUInteger i = 0; i < buffer.frameLength; i++) {
@@ -444,7 +444,7 @@
                         }
                         dispatch_async(dispatch_get_main_queue(), ^{
                             self.renderTs = ts;
-                            NSUInteger len = 20;
+                            NSUInteger len = 1;
                             NSMutableArray *valuesArray = [NSMutableArray array];
                             for (NSUInteger i = 0; i < len; i++) {
                                 NSUInteger idx = ((buffer.frameLength - 1) * i) / len;

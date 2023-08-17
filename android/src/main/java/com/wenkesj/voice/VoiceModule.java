@@ -424,14 +424,14 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
 
   private void processAudioData(float[] audioData, int frameLength) {
     double ts = System.currentTimeMillis() / 1000.0; // Convert to seconds
-    if (ts - renderTs > 0.1) {
+    if (ts - renderTs > 0.005) {
       ArrayList<Float> floats = new ArrayList<>();
       for (int i = 0; i < frameLength; i++) {
         floats.add(audioData[i]);
       }
 
       renderTs = ts;
-      int len = 20;
+      int len = 1;
       ArrayList<Integer> valuesArray = new ArrayList<>();
       for (int i = 0; i < len; i++) {
         int idx = (int) (((frameLength - 1) * i) / len);
